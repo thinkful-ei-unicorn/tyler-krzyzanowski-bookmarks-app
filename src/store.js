@@ -1,5 +1,4 @@
 const bookmarks = [];
-let hideCheckedBookmarks = false;
 const error = null;
 
 const findById = function (id) {
@@ -8,6 +7,8 @@ const findById = function (id) {
 
 const addBookmark = function (bookmark) {
   this.bookmarks.push(bookmark);
+  bookmark['editing'] = false;
+  bookmark['expanded'] = false;
 };
 
 const findAndDelete = function (id) {
@@ -19,9 +20,6 @@ const findAndUpdate = function (id, newData){
   Object.assign(found, newData);
 };
 
-const toggleCheckedFilter = function () {
-  this.hideCheckedBookmarks = !this.hideCheckedBookmarks;
-};
 
 const setError = function (error) {
   this.error = error;
@@ -29,11 +27,9 @@ const setError = function (error) {
 
 export default {
   bookmarks,
-  hideCheckedBookmarks,
   error,
   findById,
   addBookmark,
   findAndUpdate,
   findAndDelete,
-  toggleCheckedFilter
 };

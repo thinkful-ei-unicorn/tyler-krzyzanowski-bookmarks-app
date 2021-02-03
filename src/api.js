@@ -7,7 +7,7 @@ export default {
   deleteBookmark
 };
 
-const BASE_URL = 'https://thinkful-list-api.herokuapp.com/[tyler-krzyzanowski]';
+const BASE_URL = 'https://thinkful-list-api.herokuapp.com/tyler-krzyzanowski';
 
 const listApiFetch = function (...args) {
   let error;
@@ -20,18 +20,19 @@ const listApiFetch = function (...args) {
           return Promise.reject(error);
         }
       }
+      else return res.json();
     });
 };
 
 function getBookmarks(){
-  return fetch(`${BASE_URL}/bookmarks`);
+  return listApiFetch(`${BASE_URL}/bookmarks`);
 }
 
 function createBookmark(bookmark){
   let newBookmark = {
-    'name': bookmark.name,
-    'description': bookmark.description,
-    'link': bookmark.link,
+    'title': bookmark.name,
+    'desc': bookmark.description,
+    'url': bookmark.link,
     'rating': bookmark.rating,
   };
   let newBookmarkJson = JSON.stringify(newBookmark);
@@ -44,10 +45,16 @@ function createBookmark(bookmark){
 }
 
 function updateBookmark(id, updateData){
+  let bookmark = {
+    'title': updateData.title,
+    'url': updateData.url,
+    'desc': updateData.desc,
+    'rating': updateData.rating
+  };
   let updatedBookmark = listApiFetch(`${BASE_URL}/bookmarks/${id}`, {
     method: 'PATCH',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(updateData)
+    body: JSON.stringify(bookmark)
   });
   return updatedBookmark;
 }
