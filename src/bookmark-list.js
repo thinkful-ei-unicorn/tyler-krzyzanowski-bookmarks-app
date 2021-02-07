@@ -4,7 +4,8 @@ import store from './store';
 import api from './api';
 
 let adding = false;
-let isValidUrl = true;
+let addIsValidUrl = true;
+let editIsValidUrl = true;
 let minStars = 1;
 
 const generateBookmarkElement = function (bookmark) {
@@ -17,7 +18,7 @@ const generateBookmarkElement = function (bookmark) {
         <input type='text' id='bookmark-edit-name' name='name' value=${bookmark.title}>
         <label>URL</label>
         <input type='text' id='bookmark-edit-url' name='URL' value=${bookmark.url}>
-        <p ${isValidUrl ? 'hidden' : ''}>Please enter a valid URL</p>
+        <p ${editIsValidUrl ? 'hidden' : ''} class="red-text">Error: Please enter a valid URL</p>
       </div>
       <div>
         <textarea id='bookmark-edit-description' placeholder='Description' cols='60' rows='6'>${bookmark.desc}</textarea>
@@ -100,7 +101,7 @@ const generateAddSection = function(){
       <div>
         <label>URL</label>
         <input type='text' id='bookmark-submit-url' required="required" name='URL'>
-        <p ${isValidUrl ? 'hidden' : ''}>Please enter a valid URL</p>
+        <p ${addIsValidUrl ? 'hidden' : ''} class="red-text">Error: Please enter a valid URL</p>
       </div>
       <div>
         <textarea id='bookmark-submit-description' placeholder='Description' cols='30' rows='6'></textarea>
@@ -207,10 +208,10 @@ const handleEditBookmarkSubmit = function () {
     const id = getBookmarkIdFromElement(event.currentTarget);
     let url = $('#bookmark-edit-url').val();
     if(!isWebUri(url)){
-      isValidUrl = false;
+      editIsValidUrl = false;
     }
     else{
-      isValidUrl = true;
+      editIsValidUrl = true;
       store.findAndUpdate(id, {editing: false});
       const bookmark = {
         'title': $('#bookmark-edit-name').val(),
@@ -239,12 +240,12 @@ const handleNewBookmarkSubmit = function () {
     event.preventDefault();
     let url = $('#bookmark-submit-url').val();
     if(!isWebUri(url)){
-      isValidUrl = false;
+      addIsValidUrl = false;
       render();
     }
     else{
       adding = false;
-      isValidUrl = true;
+      addIsValidUrl = true;
       const newBookmarkName = $('#bookmark-submit-name').val();
       const newBookmarkLink = $('#bookmark-submit-url').val();
       const newBookmarkDescription= $('#bookmark-submit-description').val();
