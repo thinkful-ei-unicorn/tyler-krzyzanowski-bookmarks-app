@@ -1,9 +1,10 @@
 import $ from 'jquery';
-
+import {isWebUri} from 'valid-url';
 import store from './store';
 import api from './api';
 
 let adding = false;
+let isValidUrl = true;
 let minStars = 1;
 
 const generateBookmarkElement = function (bookmark) {
@@ -16,6 +17,7 @@ const generateBookmarkElement = function (bookmark) {
         <input type='text' id='bookmark-edit-name' name='name' value=${bookmark.title}>
         <label>URL</label>
         <input type='text' id='bookmark-edit-url' name='URL' value=${bookmark.url}>
+        <p ${isValidUrl ? 'hidden' : ''}>Please enter a valid URL</p>
       </div>
       <div>
         <textarea id='bookmark-edit-description' placeholder='Description' cols='60' rows='6'>${bookmark.desc}</textarea>
@@ -98,6 +100,7 @@ const generateAddSection = function(){
       <div>
         <label>URL</label>
         <input type='text' id='bookmark-submit-url' required="required" name='URL'>
+        <p ${isValidUrl ? 'hidden' : ''}>Please enter a valid URL</p>
       </div>
       <div>
         <textarea id='bookmark-submit-description' placeholder='Description' cols='30' rows='6'></textarea>
@@ -140,7 +143,6 @@ const render = function () {
   if(adding){
     let addForm = generateAddSection();
     $('main').html(addForm + BookmarksString);
-    adding = false;
   }
   else{
     $('main').html(defaultButtons + BookmarksString);
@@ -160,7 +162,6 @@ const generateSelectOptions = function () {
     }
   }
   selectOptions += '</select>';
-  console.log(selectOptions);
   return selectOptions;
 };
 
@@ -204,21 +205,29 @@ const handleEditBookmarkSubmit = function () {
   $('main').on('submit', '.edit-form', event => {
     event.preventDefault();
     const id = getBookmarkIdFromElement(event.currentTarget);
-    store.findAndUpdate(id, {editing: false});
-    const bookmark = {
-      'title': $('#bookmark-edit-name').val(),
-      'desc': $('#bookmark-edit-description').val(),
-      'url': $('#bookmark-edit-url').val(),
-      'rating': $('input[name=rating-edit]:checked').val()
-    };
-    api.updateBookmark(id, bookmark)
-      .then(bookmark => store.findAndUpdate(id, bookmark));
-    store.findAndUpdate(id, {
-      'title': bookmark.title,
-      'url': bookmark.url,
-      'desc': bookmark.desc,
-      'rating': bookmark.rating,
-      editing: false});
+    let url = $('#bookmark-edit-url').val();
+    if(!isWebUri(url)){
+      isValidUrl = false;
+    }
+    else{
+      isValidUrl = true;
+      store.findAndUpdate(id, {editing: false});
+      const bookmark = {
+        'title': $('#bookmark-edit-name').val(),
+        'desc': $('#bookmark-edit-description').val(),
+        'url': $('#bookmark-edit-url').val(),
+        'rating': $('input[name=rating-edit]:checked').val()
+      };
+      api.updateBookmark(id, bookmark)
+        .then(bookmark => store.findAndUpdate(id, bookmark));
+      store.findAndUpdate(id, {
+        'title': bookmark.title,
+        'url': bookmark.url,
+        'desc': bookmark.desc,
+        'rating': bookmark.rating,
+        editing: false});
+    }
+    
     render();
   });
   
@@ -228,22 +237,31 @@ const handleEditBookmarkSubmit = function () {
 const handleNewBookmarkSubmit = function () {
   $('main').on('submit', '.add-section-form', function (event) {
     event.preventDefault();
-    const newBookmarkName = $('#bookmark-submit-name').val();
-    const newBookmarkLink = $('#bookmark-submit-url').val();
-    const newBookmarkDescription= $('#bookmark-submit-description').val();
-    const newBookmarkRating = $('input[name=rating]:checked').val();
-    const newBookmark = {
-      'name': newBookmarkName,
-      'description': newBookmarkDescription,
-      'link': newBookmarkLink,
-      'rating': newBookmarkRating
-    };
-    $('.js-bookmark-list-entry').val('');
-    api.createBookmark(newBookmark)
-      .then((newBookmark) => {
-        store.addBookmark(newBookmark);
-        render();
-      }).catch(e => console.log(e));
+    let url = $('#bookmark-submit-url').val();
+    if(!isWebUri(url)){
+      isValidUrl = false;
+      render();
+    }
+    else{
+      adding = false;
+      isValidUrl = true;
+      const newBookmarkName = $('#bookmark-submit-name').val();
+      const newBookmarkLink = $('#bookmark-submit-url').val();
+      const newBookmarkDescription= $('#bookmark-submit-description').val();
+      const newBookmarkRating = $('input[name=rating]:checked').val();
+      const newBookmark = {
+        'name': newBookmarkName,
+        'description': newBookmarkDescription,
+        'link': newBookmarkLink,
+        'rating': newBookmarkRating
+      };
+      $('.js-bookmark-list-entry').val('');
+      api.createBookmark(newBookmark)
+        .then((newBookmark) => {
+          store.addBookmark(newBookmark);
+          render();
+        }).catch(e => console.log(e));
+    }
   });
 };
 

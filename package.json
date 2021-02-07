@@ -30,6 +30,7 @@
   "dependencies": {
     "cuid": "^2.1.6",
     "jquery": "^3.5.1",
-    "normalize.css": "^8.0.1"
+    "normalize.css": "^8.0.1",
+    "valid-url": "^1.0.9"
   }
 }
